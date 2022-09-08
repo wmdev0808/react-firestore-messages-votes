@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useState, useEffect } from "react";
 
 import { LoremIpsum } from "lorem-ipsum";
 
@@ -26,8 +26,8 @@ for (let mIdx = 0; mIdx < messagesNum; mIdx++) {
 let firstTime = true;
 
 export default function App() {
-  const userTotalVotes = useRef(0);
   const [messages, setMessages] = useState({});
+  const [userTotalVotes, setUserTotalVotes] = useState(0);
 
   // Generate some messages and votes in the database to start with.
   useEffect(() => {
@@ -113,22 +113,33 @@ export default function App() {
         for (let change of docChanges) {
           const voteData = change.doc.data();
           if (voteData.messageId in oMessages) {
-            if (oMessages[voteData.messageId].userVote) {
-              if (!voteData.userVote) {
-                userTotalVotes.current -= 1;
+            setUserTotalVotes((oldUserTotalVotes) => {
+              console.log({
+                oldUserTotalVotes,
+                mUserVote: oMessages[voteData.messageId].userVote,
+                vUserVote: voteData.userVote,
+              });
+              if (oMessages[voteData.messageId].userVote) {
+                if (voteData.userVote) {
+                  return oldUserTotalVotes;
+                }
+                return oldUserTotalVotes - 1;
               }
-            }
-            if (voteData.userVote) {
-              userTotalVotes.current += 1;
-            }
-
+              if (voteData.userVote) {
+                return oldUserTotalVotes + 1;
+              }
+              return oldUserTotalVotes;
+            });
             oMessages[voteData.messageId] = {
               ...oMessages[voteData.messageId],
               voter: voteData.voter,
               userVote: voteData.userVote,
             };
           } else {
-            userTotalVotes.current += voteData.totalVotes;
+            setUserTotalVotes((oldUserTotalVotes) => {
+              console.log("Incrementing userTotalVotes");
+              return oldUserTotalVotes + voteData.userVote;
+            });
             oMessages[voteData.messageId] = {
               voter: voteData.voter,
               userVote: voteData.userVote,
@@ -202,7 +213,7 @@ export default function App() {
       {/* <button onClick={deleteCollections}>Delete both collections!</button> */}
       <p>
         <strong>Total User upvotes: </strong>
-        {userTotalVotes.current}
+        {userTotalVotes}
       </p>
       <h1>Messages</h1>
       <ul>
@@ -224,7 +235,7 @@ export default function App() {
                     onClick={upVote(mId)}
                   >
                     <span role="img" aria-label="UpVote">
-                      👍
+                      �
                     </span>{" "}
                     {message.totalVotes}
                   </button>
