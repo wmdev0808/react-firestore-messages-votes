@@ -22,3 +22,5 @@ We defined these listeners in a `useEffect` with no dependencies. Every time som
 both Firestore `onSnapshot`s get fired, but only one of the `setMessages` and `setUserTotalVotes` calls works fine. The other one messes up.
 
 How would you solve this issue.
+
+[Codesandbox Solution](https://codesandbox.io/s/react-firestore-messages-votes-forked-m8y5k7?file=/src/App.js)
